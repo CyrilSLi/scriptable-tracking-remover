@@ -17,8 +17,16 @@ const configPage = `
     <p>Test config page</p>
     <input type="text" id="configInput" placeholder="Enter config value">
     <button id="save">Save</button>
+    <p id="saveStatus"></p>
     <script>
-        document.getElementById("save").addEventListener("click", () => completion(document.getElementById("configInput").value));
+        var config;
+        document.getElementById("save").addEventListener("click", () => {
+            config = document.getElementById("configInput").value;
+            document.getElementById("saveStatus").textContent = "Config saved: " + config;
+        });
+        document.getElementById("configInput").addEventListener("input", () => {
+            document.getElementById("saveStatus").innerHTML = "";
+        });
     </script>
 </body>
 </html>
@@ -26,12 +34,14 @@ const configPage = `
 
 if (!args.urls[0]) {
     const wv = new WebView();
-    wv.loadHTML(configPage);
-    wv.present(true);
-    const config = await wv.evaluateJavaScript("", true);
+    await wv.loadHTML(configPage);
+    await wv.present(true);
+
+    const config = await wv.evaluateJavaScript("config");
+    if (!config) {
+        return;
+    }
     sendNotif("Received config: " + config);
-    
-    sendNotif('Configuration saved, press "Close" to exit');
     return;
 }
 const input = args.urls[0];
